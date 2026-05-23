@@ -265,7 +265,7 @@ impl embedded_hal::digital::ErrorType for NoPin {
 /// - Mode 0 (CPOL=0, CPHA=0)
 /// - MSB en premier
 /// - Jusqu'à 40 MHz (commencer à 10 MHz pour le débogage)
-/// - TX uniquement — MISO n'est pas utilisé
+/// - TX uniquement : MISO n'est pas utilisé
 pub struct St7789v<SPI, DC, RST = NoPin>
 where
     SPI: SpiDevice,

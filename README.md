@@ -40,7 +40,7 @@ Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2
 |--------|---------|---------|-------------|
 | 1      | GND     | GND     |             |
 | 2      | VDD     | 3.3V    |             |
-| 3      | D/C     | GPIO 16 | Pin 21      |
+| 3      | DC     | GPIO 16 | Pin 21       |
 | 4      | CS      | GPIO 20 | Pin 26      |
 | 5      | SCL     | GPIO 18 | Pin 24      |
 | 6      | SDA     | GPIO 19 | Pin 25      |
@@ -118,7 +118,7 @@ ecran.draw_pixel(120, 160, Color::YELLOW).await.unwrap();
 ### Texte taille normale
 
 ```rust
-// Chaîne (majuscules et minuscules — la police est insensible à la casse)
+// Chaîne (majuscules et minuscules :la police est insensible à la casse)
 ecran.draw_str(8, 10, b"Bonjour ST7789V", Color::WHITE, Color::BLACK).await.unwrap();
 
 // Entier signé
