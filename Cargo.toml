@@ -1,0 +1,48 @@
+[package]
+edition = "2024"
+name = "embassy-st7789v"
+version = "0.1.0"
+authors = ["Jorge Andre Castro <georgeandrec@gmail.com>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Driver async no_std pour l'écran TFT LCD ST7789V 240x320 via SPI, basé sur Embassy."
+documentation = "https://docs.rs/embassy-st7789v"
+readme = "README.md"
+keywords = [
+    "embassy",
+    "st7789v",
+    "tft",
+    "lcd",
+    "no-std",
+]
+categories = [
+    "embedded",
+    "no-std",
+    "hardware-support",
+]
+license = "GPL-2.0-or-later"
+repository = "https://github.com/jorgeandrecastro/embassy-st7789v"
+
+[lib]
+name = "embassy_st7789v"
+path = "src/lib.rs"
+
+[dependencies.embassy-time]
+version = "0.5"
+
+[dependencies.embedded-hal]
+version = "1.0"
+
+[dependencies.embedded-hal-async]
+version = "1.0"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
