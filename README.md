@@ -7,7 +7,17 @@
 Pilote async `no_std` pour l'écran TFT LCD **ST7789V** 240×320 via SPI,
 basé sur [Embassy](https://embassy.dev).
 
-Aucun allocateur requis. Aucun code unsafe.
+Aucun code unsafe.
+
+# Version 0.2.0
+
+## Ajouté
+
+* `St7789vBuffered` : framebuffer complet 240×320 RGB565 (153 600 octets).
+* Nombreuses nouvelles fonctionnalités et améliorations.
+
+Voir `CHANGELOG.md` pour le détail des changements.
+
 
 ---
 
@@ -24,6 +34,7 @@ Aucun allocateur requis. Aucun code unsafe.
 - Contrôle de l'orientation (`MADCTL`) et de l'inversion
 - Broche RST optionnelle : utilisez `new_no_rst` si RESET est câblé haut
 - Zéro allocation :  `forbid(unsafe_code)`
+- Framebuffer complet 240×320 RGB565 via `St7789vBuffered` : zéro clignotement
 
 ---
 
@@ -53,7 +64,7 @@ Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.1"
+embassy-st7789v    = "0.2"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"
@@ -191,6 +202,37 @@ ecran.set_invert(false).await.unwrap();
 ```
 
 ---
+### Framebuffer (zéro clignotement)
+
+Pour éviter le clignotement, utilisez `St7789vBuffered` : toutes les opérations
+de dessin écrivent en RAM, puis `flush` envoie tout d'un coup à l'écran.
+
+Mémoire requise : 240 × 320 × 2 = **150 Ko** (RP2350 ✓, RP2040 ✓, STM32F103 ✗).
+
+```rust
+let mut ecran = St7789vBuffered::new(St7789v::new(spi_dev, dc, rst));
+ecran.driver().init().await.unwrap();
+
+loop {
+    ecran.fill_screen_buf(Color::BLACK);
+    ecran.draw_str_buf(8, 10, b"BONJOUR", Color::WHITE, Color::BLACK);
+    ecran.draw_u32_buf(8, 20, compteur, Color::YELLOW, Color::BLACK);
+    ecran.flush().await.unwrap(); // envoi unique → pas de clignotement
+}
+```
+
+| Méthode | Équivalent direct |
+|---|---|
+| `fill_screen_buf` | `fill_screen` |
+| `fill_rect_buf` | `fill_rect` |
+| `draw_rect_buf` | `draw_rect` |
+| `draw_str_buf` | `draw_str` |
+| `draw_char_buf` | `draw_char` |
+| `draw_i16_buf` | `draw_i16` |
+| `draw_u32_buf` | `draw_u32` |
+| `flush` | — (envoi SPI) |
+
+---
 
 ## Dépannage
 
@@ -200,6 +242,7 @@ ecran.set_invert(false).await.unwrap();
 | Couleurs inversées | Mauvais réglage d'inversion | Appeler `set_invert(false)` après `init` |
 | Mauvaise orientation | MADCTL incorrect | Essayer `set_orientation(0x60)` / `0xC0` / `0xA0` |
 | Affichage corrompu | SPI trop rapide | Baisser la fréquence à `10_000_000` pour déboguer |
+| Clignotement visible | Dessin direct sans framebuffer | Utiliser `St7789vBuffered` + `flush` |
 
 ---
 
@@ -207,7 +250,7 @@ ecran.set_invert(false).await.unwrap();
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.1"
+embassy-st7789v    = "0.2"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"

@@ -1,7 +1,7 @@
 [package]
 edition = "2024"
 name = "embassy-st7789v"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jorge Andre Castro <georgeandrec@gmail.com>"]
 build = false
 autolib = false
@@ -9,7 +9,7 @@ autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
-description = "Driver async no_std pour l'écran TFT LCD ST7789V 240x320 via SPI, basé sur Embassy."
+description = "Driver async no_std pour l'écran TFT LCD ST7789V 240x320 via SPI, basé sur Embassy, avec Framebuffer disponible au choix "
 documentation = "https://docs.rs/embassy-st7789v"
 readme = "README.md"
 keywords = [
