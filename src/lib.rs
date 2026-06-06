@@ -1142,5 +1142,48 @@ where
         x
     }
 
+    /// Dessine un glyphe 5×7 agrandi d'un facteur `scale` dans le framebuffer.
+    pub fn draw_char_scaled_buf(
+    &mut self,
+    x: u16, y: u16,
+    glyph_idx: usize,
+    fg: Color, bg: Color,
+    scale: u8,
+    ) -> u16 {
+    let s = scale as u16;
+    for ligne in 0..7u16 {
+        for col in 0..5u16 {
+            let allume = (FONT[glyph_idx][col as usize] >> ligne) & 1 == 1;
+            for sy in 0..s {
+                for sx in 0..s {
+                    self.set_pixel(x + col * s + sx, y + ligne * s + sy,
+                        if allume { fg } else { bg });
+                }
+            }
+        }
+    }
+    x + 6 * s
+}
+
+    /// Affiche une chaîne d'octets ASCII mise à l'échelle dans le framebuffer.
+    pub fn draw_str_scaled_buf(
+    &mut self,
+    mut x: u16, y: u16,
+    text: &[u8],
+    fg: Color, bg: Color,
+    scale: u8,
+) -> u16 {
+    let s = scale as u16;
+    for &c in text {
+        if x + 5 * s >= SCREEN_W { break; }
+        if let Some(idx) = St7789v::<SPI, DC, RST>::char_to_glyph(c) {
+            x = self.draw_char_scaled_buf(x, y, idx, fg, bg, scale);
+        } else {
+            x = x.saturating_add(6 * s);
+        }
+    }
+    x
+}
+
 }
 

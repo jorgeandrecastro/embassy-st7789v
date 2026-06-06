@@ -7,16 +7,32 @@
 Pilote async `no_std` pour l'écran TFT LCD **ST7789V** 240×320 via SPI,
 basé sur [Embassy](https://embassy.dev).
 
-Aucun code unsafe.
+**Aucun code unsafe.***
 
-# Version 0.2.0
+## Version 0.3.0
 
-## Ajouté
+### Ajouté
 
-* `St7789vBuffered` : framebuffer complet 240×320 RGB565 (153 600 octets).
-* Nombreuses nouvelles fonctionnalités et améliorations.
+**Texte mis à l'échelle (framebuffer)**
 
-Voir `CHANGELOG.md` pour le détail des changements.
+**St7789vBuffered::draw_char_scaled_buf** — dessine un glyphe 5×7 agrandi d'un facteur entier scale: u8 dans le framebuffer. Chaque pixel source est rendu comme un carré de scale × scale pixels.
+**St7789vBuffered::draw_str_scaled_buf** — affiche une chaîne ASCII mise à l'échelle dans le framebuffer. L'espacement entre caractères est proportionnel au facteur scale. L'affichage s'arrête automatiquement au bord droit de l'écran.
+
+Ces deux méthodes complètent draw_char_scaled et draw_str_scaled qui existaient déjà sur St7789v (driver direct), en apportant le même comportement au mode framebuffer sans clignotement.
+Exemple d'utilisation :
+```rust Double taille (10×14 px par caractère)
+ecran.draw_str_scaled_buf(8, 10, b"BONJOUR", Color::WHITE, Color::BLACK, 2);
+
+// Triple taille (15×21 px par caractère)
+ecran.draw_str_scaled_buf(8, 40, b"OK", Color::GREEN, Color::BLACK, 3);
+
+// Taille normale — identique à draw_str_buf
+ecran.draw_str_scaled_buf(8, 80, b"details", Color::CYAN, Color::BLACK, 1);
+```
+
+Note : scale est un entier (u8). Les valeurs décimales (ex. 1.5) ne sont pas
+supportées car chaque pixel de la police bitmap doit correspondre à un carré entier
+de pixels à l'écran. Pour un rendu intermédiaire, utilisez une police source plus grande.
 
 
 ---
@@ -28,7 +44,7 @@ Voir `CHANGELOG.md` pour le détail des changements.
 - `draw_pixel`, `draw_hline`, `draw_vline`
 - Police bitmap 5×7 intégrée : lettres ASCII, chiffres et symboles courants
 - `draw_str`, `draw_i16`, `draw_u32`, `draw_f32`
-- Texte mis à l'échelle : `draw_char_scaled`, `draw_str_scaled`
+- Texte mis à l'échelle : `draw_char_scaled`, `draw_str_scaled`, `draw_str_scaled_buf` , `draw_char_scaled_buf`
 - Rendu de bitmap 1 bit via `draw_bitmap`
 - Réinitialisation matérielle et logicielle
 - Contrôle de l'orientation (`MADCTL`) et de l'inversion
@@ -64,7 +80,7 @@ Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.2"
+embassy-st7789v    = "0.3"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"
@@ -152,6 +168,12 @@ ecran.draw_str_scaled(8, 40, b"OK", Color::GREEN, Color::BLACK, 3).await.unwrap(
 
 // Texte normal (scale 1 = identique à draw_str)
 ecran.draw_str_scaled(8, 80, b"details", Color::WHITE, Color::BLACK, 1).await.unwrap();
+
+// Titre en triple taille (chaque caractère : 15×21 px) avec Framebuffer
+ecran.draw_str_scaled_buf(2,270 ,b"PAS DE CHEMIN !", Color::RED, Color::BLACK,3);
+
+
+
 ```
 
 ### Affichage de flottants
@@ -231,6 +253,10 @@ loop {
 | `draw_i16_buf` | `draw_i16` |
 | `draw_u32_buf` | `draw_u32` |
 | `flush` | — (envoi SPI) |
+| `draw_char_scaled_buf`| `draw_char_scaled`|
+| `draw_str_scaled_buf`| `draw_str_scaled`|
+
+
 
 ---
 
@@ -250,7 +276,7 @@ loop {
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.2"
+embassy-st7789v    = "0.3"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"
