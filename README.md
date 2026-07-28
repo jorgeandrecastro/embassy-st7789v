@@ -9,6 +9,16 @@ basé sur [Embassy](https://embassy.dev).
 
 **Aucun code unsafe.***
 
+## Version 0.4.0
+
+### Modifié
+
+- Refactorisation interne du pilote en modules dédiés : `cmd`, `font`, `nopin`, `color`, `driver` et `buffered`.
+- Réexport des types principaux depuis la crate racine : `Color`, `NoPin`, `St7789v` et `St7789vBuffered`.
+- Amélioration de la structure du code sans changement fonctionnel sur l'API de dessin existante.
+
+---
+
 ## Version 0.3.0
 
 ### Ajouté
@@ -80,7 +90,7 @@ Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.3"
+embassy-st7789v    = "0.4"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"

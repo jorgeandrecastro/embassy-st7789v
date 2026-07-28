@@ -5,6 +5,15 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [0.4.0] — 2026-07-28
+
+### Modifié
+- Refactorisation du pilote en modules séparés : `cmd`, `font`, `nopin`, `color`, `driver` et `buffered`.
+- Réexport des types principaux depuis la crate racine (`Color`, `NoPin`, `St7789v`, `St7789vBuffered`) pour simplifier l'utilisation.
+- Amélioration de la structure interne du code sans changement fonctionnel sur l'API de dessin existante.
+
+---
+
 ## [0.3.0] — 2026-06-06
 
 ### Ajouté
