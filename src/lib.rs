@@ -70,3 +70,9 @@ pub const SCREEN_W: u16 = 240;
 
 /// Hauteur de l'écran en pixels.
 pub const SCREEN_H: u16 = 320;
+
+/// Constantes pour les symboles mathématiques dans la police bitmap intégrée.
+pub use font::{
+    LAMBDA, THETA, PI, DELTA, DEGREE, PLUS_MINUS,
+    TIMES, DIVIDE, SQRT, INFINITY, APPROX, LE, GE,
+};

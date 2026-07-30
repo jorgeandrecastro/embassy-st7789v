@@ -9,13 +9,14 @@ basé sur [Embassy](https://embassy.dev).
 
 **Aucun code unsafe.***
 
-## Version 0.4.0
+## Version 0.5.0
 
 ### Modifié
 
-- Refactorisation interne du pilote en modules dédiés : `cmd`, `font`, `nopin`, `color`, `driver` et `buffered`.
-- Réexport des types principaux depuis la crate racine : `Color`, `NoPin`, `St7789v` et `St7789vBuffered`.
-- Amélioration de la structure du code sans changement fonctionnel sur l'API de dessin existante.
+- Mise à jour de la documentation pour la version 0.5.0.
+- Documentation des nouveaux symboles mathématiques/grecs intégrés à la police bitmap : `π`, `°`, `±`, `×`, `÷`, `√`, `∞`, `≈`, `≤`, `≥`.
+- Alignement des exemples d'installation et des références de version sur la release 0.5.
+- Aucun changement fonctionnel sur l'API de dessin existante.
 
 ---
 
@@ -24,7 +25,7 @@ basé sur [Embassy](https://embassy.dev).
 - Couleurs RGB565 avec constantes nommées (`BLACK`, `RED`, `CYAN` …)
 - `fill_screen`, `fill_rect`, `draw_rect`
 - `draw_pixel`, `draw_hline`, `draw_vline`
-- Police bitmap 5×7 intégrée : lettres ASCII, chiffres et symboles courants
+- Police bitmap 5×7 intégrée : lettres ASCII, chiffres, symboles courants et symboles mathématiques/grecs (`PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`, `DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`)
 - `draw_str`, `draw_i16`, `draw_u32`, `draw_f32`
 - Texte mis à l'échelle : `draw_char_scaled`, `draw_str_scaled`, `draw_str_scaled_buf` , `draw_char_scaled_buf`
 - Rendu de bitmap 1 bit via `draw_bitmap`
@@ -62,7 +63,7 @@ Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.4"
+embassy-st7789v    = "0.5"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"
@@ -137,6 +138,20 @@ ecran.draw_i16(56, 20, -42, Color::YELLOW, Color::BLACK).await.unwrap();
 // Entier non signé
 ecran.draw_str(8, 30, b"Compteur: ", Color::WHITE, Color::BLACK).await.unwrap();
 ecran.draw_u32(74, 30, 123456, Color::CYAN, Color::BLACK).await.unwrap();
+```
+
+### Symboles mathématiques
+
+La police bitmap intégrée prend désormais en charge plusieurs symboles mathématiques et grecs, accessibles via des codes étendus exportés par la crate : `PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`, `DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`, etc.
+
+```rust
+use embassy_st7789v::{Color, PI, DEGREE, PLUS_MINUS};
+
+// Exemple minimal : afficher "π", "°" et "±"
+ecran.draw_str(8, 10, b"PI: ", Color::WHITE, Color::BLACK).await.unwrap();
+ecran.draw_str(32, 10, &[PI], Color::CYAN, Color::BLACK).await.unwrap();
+ecran.draw_str(8, 20, &[b'3', b'0', DEGREE, b'C'], Color::YELLOW, Color::BLACK).await.unwrap();
+ecran.draw_str(8, 30, &[b'1', b' ', PLUS_MINUS, b' 1'], Color::GREEN, Color::BLACK).await.unwrap();
 ```
 
 ### Texte mis à l'échelle
@@ -258,7 +273,7 @@ loop {
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.4"
+embassy-st7789v    = "0.5"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"

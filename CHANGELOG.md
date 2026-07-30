@@ -5,6 +5,17 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [0.5.0] — 2026-07-30
+
+### Modifié
+- Mise à jour de la documentation du README pour la version 0.5.0.
+- Alignement des exemples d'installation et des références de version sur la release 0.5.
+- Documentation des nouveaux symboles mathématiques/grecs intégrés à la police bitmap : `π`, `°`, `±`, `×`, `÷`, `√`, `∞`, `≈`, `≤`, `≥`.
+- Ajout d’un exemple minimal d’utilisation des constantes exportées depuis la crate (`PI`, `DEGREE`, `PLUS_MINUS`, etc.) avec `draw_str`.
+- Aucun changement fonctionnel sur l'API de dessin existante.
+
+---
+
 ## [0.4.0] — 2026-07-28
 
 ### Modifié
