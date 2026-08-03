@@ -9,14 +9,18 @@ basé sur [Embassy](https://embassy.dev).
 
 **Aucun code unsafe.***
 
-## Version 0.5.0
+## Version 0.6.0
+
+### Ajouté
+
+- Nouvelle méthode `blit_u16` pour envoyer un buffer RGB565 externe vers une fenêtre rectangulaire en un seul flux SPI continu.
+- Documentation de la méthode `blit_u16` dans les exemples d'utilisation du README.
 
 ### Modifié
 
-- Mise à jour de la documentation pour la version 0.5.0.
+- Mise à jour de la documentation pour la version 0.6.0.
 - Documentation des nouveaux symboles mathématiques/grecs intégrés à la police bitmap : `π`, `°`, `±`, `×`, `÷`, `√`, `∞`, `≈`, `≤`, `≥`.
-- Alignement des exemples d'installation et des références de version sur la release 0.5.
-- Aucun changement fonctionnel sur l'API de dessin existante.
+- Alignement des exemples d'installation et des références de version sur la release 0.6.
 
 ---
 
@@ -25,6 +29,7 @@ basé sur [Embassy](https://embassy.dev).
 - Couleurs RGB565 avec constantes nommées (`BLACK`, `RED`, `CYAN` …)
 - `fill_screen`, `fill_rect`, `draw_rect`
 - `draw_pixel`, `draw_hline`, `draw_vline`
+- `blit_u16` pour écrire rapidement un buffer RGB565 sur une zone rectangulaire
 - Police bitmap 5×7 intégrée : lettres ASCII, chiffres, symboles courants et symboles mathématiques/grecs (`PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`, `DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`)
 - `draw_str`, `draw_i16`, `draw_u32`, `draw_f32`
 - Texte mis à l'échelle : `draw_char_scaled`, `draw_str_scaled`, `draw_str_scaled_buf` , `draw_char_scaled_buf`
@@ -63,7 +68,7 @@ Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.5"
+embassy-st7789v    = "0.6"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"
@@ -123,6 +128,10 @@ ecran.draw_vline(120, 0, 320, Color::MAGENTA).await.unwrap();
 
 // Pixel unique
 ecran.draw_pixel(120, 160, Color::YELLOW).await.unwrap();
+
+// Buffer RGB565 vers une zone rectangulaire (2×2 pixels)
+let pixels = [0xF800u16, 0x07E0u16, 0x001Fu16, 0xFFFFu16];
+ecran.blit_u16(0, 0, 1, 1, &pixels).await.unwrap();
 ```
 
 ### Texte taille normale

@@ -691,4 +691,41 @@ where
             self.write_cmd(cmd::INVOFF).await
         }
     }
+    /// Envoie un buffer RGB565 externe (déjà composé en RAM par l'appelant)
+   /// vers une fenêtre rectangulaire, en un seul flux SPI continu.
+   ///
+   /// Ouvre la fenêtre `CASET`/`RASET`/`RAMWR` **une seule fois**, puis diffuse
+   /// tous les pixels sans réinitialisation entre chacun  contrairement à des
+   /// appels répétés à [`draw_pixel`](Self::draw_pixel), qui rouvrent la fenêtre
+   /// à chaque pixel et provoquent un redessin visible progressif.
+   ///
+   /// `pixels.len()` doit correspondre à `(x1 - x0 + 1) * (y1 - y0 + 1)`.
+   pub async fn blit_u16(
+    &mut self,
+    x0: u16, y0: u16,
+    x1: u16, y1: u16,
+    pixels: &[u16],
+   ) -> Result<(), SPI::Error> {
+    let x0 = x0.min(SCREEN_W - 1);
+    let y0 = y0.min(SCREEN_H - 1);
+    let x1 = x1.min(SCREEN_W - 1);
+    let y1 = y1.min(SCREEN_H - 1);
+
+    self.set_window_only(x0, y0, x1, y1).await?;
+    self.write_cmd(cmd::RAMWR).await?;
+
+    const CHUNK_PIX: usize = 256;
+    let mut buf = [0u8; CHUNK_PIX * 2];
+
+    let _ = self.dc.set_high();
+    for chunk in pixels.chunks(CHUNK_PIX) {
+        for (i, &p) in chunk.iter().enumerate() {
+            let [hi, lo] = p.to_be_bytes();
+            buf[i * 2]     = hi;
+            buf[i * 2 + 1] = lo;
+        }
+        self.spi.write(&buf[..chunk.len() * 2]).await?;
+    }
+    Ok(())
+   } 
 }
