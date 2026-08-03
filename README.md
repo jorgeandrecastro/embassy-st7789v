@@ -16,11 +16,6 @@ basé sur [Embassy](https://embassy.dev).
 - Nouvelle méthode `blit_u16` pour envoyer un buffer RGB565 externe vers une fenêtre rectangulaire en un seul flux SPI continu.
 - Documentation de la méthode `blit_u16` dans les exemples d'utilisation du README.
 
-### Modifié
-
-- Mise à jour de la documentation pour la version 0.6.0.
-- Documentation des nouveaux symboles mathématiques/grecs intégrés à la police bitmap : `π`, `°`, `±`, `×`, `÷`, `√`, `∞`, `≈`, `≤`, `≥`.
-- Alignement des exemples d'installation et des références de version sur la release 0.6.
 
 ---
 
@@ -282,7 +277,7 @@ loop {
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.5"
+embassy-st7789v    = "0.6"
 embassy-time       = "0.5"
 embedded-hal       = "1.0"
 embedded-hal-async = "1.0"

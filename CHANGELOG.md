@@ -8,7 +8,7 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 ## [0.6.0] — 2026-08-03
 
 ### Ajouté
-- `St7789v::blit_u16` — envoie un buffer RGB565 externe vers une fenêtre rectangulaire en un seul flux SPI continu.
+- `St7789v::blit_u16` : envoie un buffer RGB565 externe vers une fenêtre rectangulaire en un seul flux SPI continu.
 - Documentation du README pour la nouvelle méthode `blit_u16` et un exemple d'utilisation associé.
 
 ### Modifié
