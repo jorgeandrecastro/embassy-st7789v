@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Jorge Andre Castro
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-//! Wrapper avec framebuffer complet en RAM pour le ST7789V.
+//! Full in-memory framebuffer wrapper for the ST7789V.
 
 use embedded_hal_async::spi::SpiDevice;
 use embedded_hal::digital::OutputPin;
@@ -13,14 +13,14 @@ use crate::nopin::NoPin;
 use crate::driver::St7789v;
 use crate::{SCREEN_W, SCREEN_H};
 
-/// Wrapper avec framebuffer complet en RAM (150 Ko).
+/// Wrapper with a full in-memory framebuffer (150 KiB).
 ///
-/// Toutes les opérations de dessin écrivent en RAM uniquement.
-/// Appelle [`flush`](St7789vBuffered::flush) une fois par frame pour envoyer
-/// le résultat à l'écran en une seule passe SPI : zéro clignotement.
+/// All drawing operations write to RAM only.
+/// Call [`flush`](St7789vBuffered::flush) once per frame to send
+/// the result to the display in one SPI transfer, avoiding flicker.
 ///
-/// # Mémoire requise
-/// 240 × 320 × 2 = **153 600 octets**. Nécessite un MCU avec suffisamment de RAM
+/// # Memory requirement
+/// 240 × 320 × 2 = **153,600 bytes**. Requires an MCU with enough RAM
 /// (RP2350 : 520 Ko ✓, RP2040 : 264 Ko ✓, STM32F103 : 20 Ko ✗).
 pub struct St7789vBuffered<SPI, DC, RST = NoPin>
 where
@@ -38,7 +38,7 @@ where
     DC: OutputPin,
     RST: OutputPin,
 {
-    /// Crée un wrapper framebuffer à partir d'un pilote déjà initialisé.
+    /// Creates a framebuffer wrapper from a driver.
     pub fn new(driver: St7789v<SPI, DC, RST>) -> Self {
         Self {
             inner: driver,
@@ -46,14 +46,14 @@ where
         }
     }
 
-    /// Accès au pilote sous-jacent (pour `init`, `set_orientation`, etc.).
+    /// Accesses the underlying driver (for `init`, `set_orientation`, etc.).
     pub fn driver(&mut self) -> &mut St7789v<SPI, DC, RST> {
         &mut self.inner
     }
 
     // ── Primitives RAM ────────────────────────────────────────────────────────
 
-    /// Écrit un pixel dans le framebuffer (rien n'est envoyé à l'écran).
+    /// Writes a pixel to the framebuffer (nothing is sent to the display).
     #[inline]
     pub fn set_pixel(&mut self, x: u16, y: u16, color: Color) {
         if x >= SCREEN_W || y >= SCREEN_H { return; }
@@ -63,12 +63,12 @@ where
         self.fb[idx + 1] = lo;
     }
 
-    /// Remplit tout l'écran dans le framebuffer.
+    /// Fills the framebuffer with a color.
     pub fn fill_screen_buf(&mut self, color: Color) {
         self.fill_rect_buf(0, 0, SCREEN_W - 1, SCREEN_H - 1, color);
     }
 
-    /// Remplit un rectangle dans le framebuffer.
+    /// Fills a rectangle in the framebuffer.
     pub fn fill_rect_buf(&mut self, x0: u16, y0: u16, x1: u16, y1: u16, color: Color) {
         let [hi, lo] = color.to_be_bytes();
         for y in y0..=y1.min(SCREEN_H - 1) {
@@ -81,15 +81,15 @@ where
         }
     }
 
-    /// Dessine le contour d'un rectangle dans le framebuffer.
+    /// Draws a rectangle outline in the framebuffer.
     pub fn draw_rect_buf(&mut self, x0: u16, y0: u16, x1: u16, y1: u16, color: Color) {
         for x in x0..=x1 { self.set_pixel(x, y0, color); self.set_pixel(x, y1, color); }
         for y in y0..=y1 { self.set_pixel(x0, y, color); self.set_pixel(x1, y, color); }
     }
 
-    /// Écrit une chaîne ASCII dans le framebuffer via `set_pixel`.
+    /// Writes an ASCII string to the framebuffer via `set_pixel`.
     ///
-    /// Retourne la coordonnée x après le dernier caractère.
+    /// Returns the x coordinate after the last character.
     pub fn draw_str_buf(
         &mut self,
         mut x: u16, y: u16,
@@ -107,7 +107,7 @@ where
         x
     }
 
-    /// Écrit un glyphe 5×7 dans le framebuffer.
+    /// Writes a 5×7 glyph to the framebuffer.
     pub fn draw_char_buf(
         &mut self,
         x: u16, y: u16,
@@ -123,7 +123,7 @@ where
         x + 6
     }
 
-    /// Écrit un entier signé 16 bits dans le framebuffer.
+    /// Writes a signed 16-bit integer to the framebuffer.
     pub fn draw_i16_buf(&mut self, mut x: u16, y: u16, val: i16, fg: Color, bg: Color) -> u16 {
         if val < 0 {
             x = self.draw_char_buf(x, y, 10, fg, bg); // '-'
@@ -145,10 +145,10 @@ where
 
     // ── Flush ─────────────────────────────────────────────────────────────────
 
-    /// Envoie le framebuffer complet à l'écran en une seule passe SPI.
+    /// Sends the entire framebuffer to the display in one SPI transfer.
     ///
-    /// À appeler **une fois par frame**, après avoir tout dessiné en RAM.
-    /// Aucun clignotement car l'écran reçoit les pixels déjà composés.
+    /// Call **once per frame**, after drawing everything in RAM.
+    /// This avoids flicker because the display receives the already-composited pixels.
     pub async fn flush(&mut self) -> Result<(), SPI::Error> {
         self.inner.set_window_only(0, 0, SCREEN_W - 1, SCREEN_H - 1).await?;
         self.inner.write_cmd(cmd::RAMWR).await?;
@@ -161,7 +161,7 @@ where
         Ok(())
     }
 
-    /// Écrit un entier non signé 32 bits dans le framebuffer.
+    /// Writes an unsigned 32-bit integer to the framebuffer.
     pub fn draw_u32_buf(&mut self, mut x: u16, y: u16, val: u32, fg: Color, bg: Color) -> u16 {
         let mut n = val;
         let mut chiffres = [0u8; 10];
@@ -178,7 +178,7 @@ where
         x
     }
 
-    /// Dessine un glyphe 5×7 agrandi d'un facteur `scale` dans le framebuffer.
+    /// Draws a 5×7 glyph enlarged by a `scale` factor in the framebuffer.
     pub fn draw_char_scaled_buf(
         &mut self,
         x: u16, y: u16,
@@ -201,7 +201,7 @@ where
         x + 6 * s
     }
 
-    /// Affiche une chaîne d'octets ASCII mise à l'échelle dans le framebuffer.
+    /// Writes a scaled ASCII byte string to the framebuffer.
     pub fn draw_str_scaled_buf(
         &mut self,
         mut x: u16, y: u16,

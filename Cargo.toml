@@ -1,7 +1,8 @@
+
 [package]
 edition = "2024"
 name = "embassy-st7789v"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Jorge Andre Castro <georgeandrec@gmail.com>"]
 build = false
 autolib = false
@@ -9,21 +10,11 @@ autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
-description = "Driver async no_std pour l'écran TFT LCD ST7789V 240x320 via SPI, basé sur Embassy, avec Framebuffer disponible au choix "
+description = "Async no_std driver for the ST7789V 240x320 TFT LCD over SPI, based on Embassy, with optional framebuffer support."
 documentation = "https://docs.rs/embassy-st7789v"
 readme = "README.md"
-keywords = [
-    "embassy",
-    "st7789v",
-    "tft",
-    "lcd",
-    "no-std",
-]
-categories = [
-    "embedded",
-    "no-std",
-    "hardware-support",
-]
+keywords = ["embassy", "st7789v", "tft", "lcd", "no-std"]
+categories = ["embedded", "no-std", "hardware-support"]
 license = "GPL-2.0-or-later"
 repository = "https://github.com/jorgeandrecastro/embassy-st7789v"
 
@@ -31,14 +22,30 @@ repository = "https://github.com/jorgeandrecastro/embassy-st7789v"
 name = "embassy_st7789v"
 path = "src/lib.rs"
 
-[dependencies.embassy-time]
-version = "0.5"
+[features]
+default = ["time-upstream"]
 
-[dependencies.embedded-hal]
-version = "1.0"
+# Official Embassy backend
+time-upstream = ["dep:embassy-time"]
 
-[dependencies.embedded-hal-async]
-version = "1.0"
+# RP2350 Hazard3 RISC-V backend
+time-riscv = ["dep:embassy-time-riscv"]
+
+[dependencies]
+embedded-hal = { version = "1.0", default-features = false }
+embedded-hal-async = { version = "1.0", default-features = false }
+
+embassy-time = {
+    version = "0.5",
+    optional = true,
+    default-features = false
+}
+
+embassy-time-riscv = {
+    version = "0.1.2",
+    optional = true,
+    default-features = false
+}
 
 [profile.release]
 opt-level = "z"

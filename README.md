@@ -2,78 +2,95 @@
 
 [![Crates.io](https://img.shields.io/crates/v/embassy-st7789v.svg)](https://crates.io/crates/embassy-st7789v)
 [![Docs.rs](https://docs.rs/embassy-st7789v/badge.svg)](https://docs.rs/embassy-st7789v)
-[![Licence : GPL-2.0-or-later](https://img.shields.io/badge/licence-GPL--2.0--or--later-blue.svg)](LICENSE)
+[![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
 
-Pilote async `no_std` pour l'écran TFT LCD **ST7789V** 240×320 via SPI,
-basé sur [Embassy](https://embassy.dev).
+An asynchronous `no_std` driver for the **ST7789V** 240×320 TFT LCD over SPI,
+based on [Embassy](https://embassy.dev).
 
-**Aucun code unsafe.***
+**No unsafe code.**
 
-## Version 0.6.0
+## Version 0.6.1
 
-### Ajouté
+### Added
 
-- Nouvelle méthode `blit_u16` pour envoyer un buffer RGB565 externe vers une fenêtre rectangulaire en un seul flux SPI continu.
-- Documentation de la méthode `blit_u16` dans les exemples d'utilisation du README.
-
-
----
-
-## Fonctionnalités
-
-- Couleurs RGB565 avec constantes nommées (`BLACK`, `RED`, `CYAN` …)
-- `fill_screen`, `fill_rect`, `draw_rect`
-- `draw_pixel`, `draw_hline`, `draw_vline`
-- `blit_u16` pour écrire rapidement un buffer RGB565 sur une zone rectangulaire
-- Police bitmap 5×7 intégrée : lettres ASCII, chiffres, symboles courants et symboles mathématiques/grecs (`PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`, `DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`)
-- `draw_str`, `draw_i16`, `draw_u32`, `draw_f32`
-- Texte mis à l'échelle : `draw_char_scaled`, `draw_str_scaled`, `draw_str_scaled_buf` , `draw_char_scaled_buf`
-- Rendu de bitmap 1 bit via `draw_bitmap`
-- Réinitialisation matérielle et logicielle
-- Contrôle de l'orientation (`MADCTL`) et de l'inversion
-- Broche RST optionnelle : utilisez `new_no_rst` si RESET est câblé haut
-- Zéro allocation :  `forbid(unsafe_code)`
-- Framebuffer complet 240×320 RGB565 via `St7789vBuffered` : zéro clignotement
+- The `time-riscv` Cargo feature selects a custom Embassy time dependency for the
+  RP2350 Hazard3 RISC-V core; see [Installation](#rp2350-hazard3-risc-v-time-backend).
 
 ---
 
-## Matériel supporté
+## Features
 
-Tout panneau piloté par un ST7789V via SPI 4 fils (DC + CS + SCL + SDA).
-Testé sur un module IPS TFT 2.0" (240×320) avec un RP2350 (Raspberry Pi Pico 2).
+- RGB565 colors with named constants (`BLACK`, `RED`, `CYAN`, etc.)
+- `fill_screen`, `fill_rect`, and `draw_rect`
+- `draw_pixel`, `draw_hline`, and `draw_vline`
+- `blit_u16` to quickly write an RGB565 buffer to a rectangular area
+- Built-in 5×7 bitmap font: ASCII letters, digits, common symbols, and mathematical/Greek symbols (`PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`, `DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`)
+- `draw_str`, `draw_i16`, `draw_u32`, and `draw_f32`
+- Scaled text: `draw_char_scaled`, `draw_str_scaled`, `draw_str_scaled_buf`, and `draw_char_scaled_buf`
+- 1-bit bitmap rendering with `draw_bitmap`
+- Hardware and software reset
+- Orientation (`MADCTL`) and inversion control
+- Optional RST pin: use `new_no_rst` when RESET is tied high
+- Zero allocation and `forbid(unsafe_code)`
+- Full 240×320 RGB565 framebuffer with `St7789vBuffered` for flicker-free updates
 
 ---
 
-## Câblage — exemple RP2350
+## Supported hardware
 
-| Broche | Symbole | RP2350  | Pin physique |
-|--------|---------|---------|-------------|
-| 1      | GND     | GND     |             |
-| 2      | VDD     | 3.3V    |             |
-| 3      | DC     | GPIO 16 | Pin 21       |
-| 4      | CS      | GPIO 20 | Pin 26      |
-| 5      | SCL     | GPIO 18 | Pin 24      |
-| 6      | SDA     | GPIO 19 | Pin 25      |
-| 7      | RESET   | GPIO 17 | Pin 22      |
+Any 4-wire SPI panel driven by an ST7789V (DC + CS + SCL + SDA).
+Tested with a 2.0" IPS TFT module (240×320) and an RP2350 (Raspberry Pi Pico 2).
 
+---
+
+## Wiring example — RP2350
+
+| Pin | Signal | RP2350 | Physical pin |
+|-----|--------|--------|--------------|
+| 1   | GND    | GND    |              |
+| 2   | VDD    | 3.3V   |              |
+| 3   | DC     | GPIO 16 | Pin 21       |
+| 4   | CS     | GPIO 20 | Pin 26       |
+| 5   | SCL    | GPIO 18 | Pin 24       |
+| 6   | SDA    | GPIO 19 | Pin 25       |
+| 7   | RESET  | GPIO 17 | Pin 22       |
 
 ---
 
 ## Installation
 
+For ARM/Cortex-M targets, the official Embassy time backend is enabled by default:
+
 ```toml
 [dependencies]
-embassy-st7789v    = "0.6"
-embassy-time       = "0.5"
-embedded-hal       = "1.0"
+embassy-st7789v = "0.6.1"
+embassy-time = "0.5"
+embedded-hal = "1.0"
 embedded-hal-async = "1.0"
 ```
 
+### RP2350 Hazard3 RISC-V time backend
+
+The `time-riscv` feature selects the `embassy-time-riscv` dependency
+for the RP2350 Hazard3 RISC-V core. The two time backend features are mutually
+exclusive, so selecting `time-riscv` requires disabling the default `time-upstream`
+feature.
+
+```toml
+[dependencies]
+embassy-st7789v = { version = "0.6.1", default-features = false, features = ["time-riscv"] }
+embedded-hal = "1.0"
+embedded-hal-async = "1.0"
+```
+
+The current manifest does not include a local Cargo patch. Any local `[patch.crates-io]`
+configuration belongs in the root manifest of the project being built.
+
 ---
 
-## Utilisation
+## Usage
 
-### Initialisation minimale (RP2350 + Embassy)
+### Minimal initialization (RP2350 + Embassy)
 
 ```rust
 use embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice;
@@ -87,164 +104,164 @@ use static_cell::StaticCell;
 type SpiBus = Mutex<NoopRawMutex, Spi<'static, embassy_rp::peripherals::SPI0, embassy_rp::spi::Async>>;
 static SPI_BUS: StaticCell<SpiBus> = StaticCell::new();
 
-// Dans votre async main :
+// In your async main:
 let mut spi_cfg = SpiConfig::default();
 spi_cfg.frequency = 40_000_000;
 
 let spi = Spi::new_txonly(p.SPI0, p.PIN_18, p.PIN_19, p.DMA_CH0, Irqs, spi_cfg);
 let spi_bus = SPI_BUS.init(Mutex::new(spi));
 
-let cs  = Output::new(p.PIN_20, Level::High);
-let dc  = Output::new(p.PIN_16, Level::Low);
+let cs = Output::new(p.PIN_20, Level::High);
+let dc = Output::new(p.PIN_16, Level::Low);
 let rst = Output::new(p.PIN_17, Level::High);
 
 let spi_dev = SpiDevice::new(spi_bus, cs);
-let mut ecran = St7789v::new(spi_dev, dc, rst);
+let mut display = St7789v::new(spi_dev, dc, rst);
 
-ecran.init().await.unwrap();
+display.init().await.unwrap();
 ```
 
-### Dessin
+### Drawing
 
 ```rust
-// Remplir l'écran
-ecran.fill_screen(Color::BLACK).await.unwrap();
+// Fill the screen
+display.fill_screen(Color::BLACK).await.unwrap();
 
-// Rectangles colorés
-ecran.fill_rect(0,  0, 79, 79, Color::RED).await.unwrap();
-ecran.fill_rect(80, 0, 159, 79, Color::GREEN).await.unwrap();
+// Colored rectangles
+display.fill_rect(0, 0, 79, 79, Color::RED).await.unwrap();
+display.fill_rect(80, 0, 159, 79, Color::GREEN).await.unwrap();
 
-// Contour de rectangle
-ecran.draw_rect(10, 10, 230, 310, Color::WHITE).await.unwrap();
+// Rectangle outline
+display.draw_rect(10, 10, 230, 310, Color::WHITE).await.unwrap();
 
-// Lignes
-ecran.draw_hline(0, 160, 240, Color::CYAN).await.unwrap();
-ecran.draw_vline(120, 0, 320, Color::MAGENTA).await.unwrap();
+// Lines
+display.draw_hline(0, 160, 240, Color::CYAN).await.unwrap();
+display.draw_vline(120, 0, 320, Color::MAGENTA).await.unwrap();
 
-// Pixel unique
-ecran.draw_pixel(120, 160, Color::YELLOW).await.unwrap();
+// Single pixel
+display.draw_pixel(120, 160, Color::YELLOW).await.unwrap();
 
-// Buffer RGB565 vers une zone rectangulaire (2×2 pixels)
+// RGB565 buffer to a rectangular area (2×2 pixels)
 let pixels = [0xF800u16, 0x07E0u16, 0x001Fu16, 0xFFFFu16];
-ecran.blit_u16(0, 0, 1, 1, &pixels).await.unwrap();
+display.blit_u16(0, 0, 1, 1, &pixels).await.unwrap();
 ```
 
-### Texte taille normale
+### Regular-size text
 
 ```rust
-// Chaîne (majuscules et minuscules :la police est insensible à la casse)
-ecran.draw_str(8, 10, b"Bonjour ST7789V", Color::WHITE, Color::BLACK).await.unwrap();
+// String (the font is case-insensitive)
+display.draw_str(8, 10, b"Hello ST7789V", Color::WHITE, Color::BLACK).await.unwrap();
 
-// Entier signé
-ecran.draw_str(8, 20, b"Temp: ", Color::WHITE, Color::BLACK).await.unwrap();
-ecran.draw_i16(56, 20, -42, Color::YELLOW, Color::BLACK).await.unwrap();
+// Signed integer
+display.draw_str(8, 20, b"Temp: ", Color::WHITE, Color::BLACK).await.unwrap();
+display.draw_i16(56, 20, -42, Color::YELLOW, Color::BLACK).await.unwrap();
 
-// Entier non signé
-ecran.draw_str(8, 30, b"Compteur: ", Color::WHITE, Color::BLACK).await.unwrap();
-ecran.draw_u32(74, 30, 123456, Color::CYAN, Color::BLACK).await.unwrap();
+// Unsigned integer
+display.draw_str(8, 30, b"Counter: ", Color::WHITE, Color::BLACK).await.unwrap();
+display.draw_u32(74, 30, 123456, Color::CYAN, Color::BLACK).await.unwrap();
 ```
 
-### Symboles mathématiques
+### Mathematical symbols
 
-La police bitmap intégrée prend désormais en charge plusieurs symboles mathématiques et grecs, accessibles via des codes étendus exportés par la crate : `PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`, `DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`, etc.
+The built-in bitmap font supports several mathematical and Greek symbols, available
+through extended codes exported by the crate: `PI`, `DEGREE`, `PLUS_MINUS`, `TIMES`,
+`DIVIDE`, `SQRT`, `INFINITY`, `APPROX`, `LE`, `GE`, and more.
 
 ```rust
 use embassy_st7789v::{Color, PI, DEGREE, PLUS_MINUS};
 
-// Exemple minimal : afficher "π", "°" et "±"
-ecran.draw_str(8, 10, b"PI: ", Color::WHITE, Color::BLACK).await.unwrap();
-ecran.draw_str(32, 10, &[PI], Color::CYAN, Color::BLACK).await.unwrap();
-ecran.draw_str(8, 20, &[b'3', b'0', DEGREE, b'C'], Color::YELLOW, Color::BLACK).await.unwrap();
-ecran.draw_str(8, 30, &[b'1', b' ', PLUS_MINUS, b' 1'], Color::GREEN, Color::BLACK).await.unwrap();
+// Minimal example: display "π", "°", and "±"
+display.draw_str(8, 10, b"PI: ", Color::WHITE, Color::BLACK).await.unwrap();
+display.draw_str(32, 10, &[PI], Color::CYAN, Color::BLACK).await.unwrap();
+display.draw_str(8, 20, &[b'3', b'0', DEGREE, b'C'], Color::YELLOW, Color::BLACK).await.unwrap();
+display.draw_str(8, 30, &[b'1', b' ', PLUS_MINUS, b' ', b'1'], Color::GREEN, Color::BLACK).await.unwrap();
 ```
 
-### Texte mis à l'échelle
+### Scaled text
 
 ```rust
-// Titre en double taille (chaque caractère : 10×14 px)
-ecran.draw_str_scaled(8, 10, b"ERREUR", Color::RED, Color::BLACK, 2).await.unwrap();
+// Double-size title (each character: 10×14 px)
+display.draw_str_scaled(8, 10, b"ERROR", Color::RED, Color::BLACK, 2).await.unwrap();
 
-// Titre en triple taille (chaque caractère : 15×21 px)
-ecran.draw_str_scaled(8, 40, b"OK", Color::GREEN, Color::BLACK, 3).await.unwrap();
+// Triple-size title (each character: 15×21 px)
+display.draw_str_scaled(8, 40, b"OK", Color::GREEN, Color::BLACK, 3).await.unwrap();
 
-// Texte normal (scale 1 = identique à draw_str)
-ecran.draw_str_scaled(8, 80, b"details", Color::WHITE, Color::BLACK, 1).await.unwrap();
+// Regular-size text (scale 1 is identical to draw_str)
+display.draw_str_scaled(8, 80, b"details", Color::WHITE, Color::BLACK, 1).await.unwrap();
 
-// Titre en triple taille (chaque caractère : 15×21 px) avec Framebuffer
-ecran.draw_str_scaled_buf(2,270 ,b"PAS DE CHEMIN !", Color::RED, Color::BLACK,3);
-
-
-
+// Triple-size title (each character: 15×21 px) with the framebuffer
+display.draw_str_scaled_buf(2, 270, b"NO PATH!", Color::RED, Color::BLACK, 3);
 ```
 
-### Affichage de flottants
+### Floating-point values
 
 ```rust
-// Affiche "-3.14"
-ecran.draw_f32(8, 100, -3.14, 2, Color::YELLOW, Color::BLACK).await.unwrap();
+// Displays "-3.14"
+display.draw_f32(8, 100, -3.14, 2, Color::YELLOW, Color::BLACK).await.unwrap();
 
-// Affiche "23.5" (1 décimale)
-ecran.draw_f32(8, 110, 23.456, 1, Color::CYAN, Color::BLACK).await.unwrap();
+// Displays "23.5" (1 decimal place)
+display.draw_f32(8, 110, 23.456, 1, Color::CYAN, Color::BLACK).await.unwrap();
 
-// Affiche "100" (sans décimale)
-ecran.draw_f32(8, 120, 100.0, 0, Color::WHITE, Color::BLACK).await.unwrap();
+// Displays "100" (no decimal places)
+display.draw_f32(8, 120, 100.0, 0, Color::WHITE, Color::BLACK).await.unwrap();
 
-// Cas spéciaux : affiche "NaN", "+Inf", "-Inf"
-ecran.draw_f32(8, 130, f32::NAN, 2, Color::RED, Color::BLACK).await.unwrap();
+// Special cases: displays "NaN", "+Inf", or "-Inf"
+display.draw_f32(8, 130, f32::NAN, 2, Color::RED, Color::BLACK).await.unwrap();
 ```
 
-### Couleurs
+### Colors
 
 ```rust
-// Constantes prédéfinies
-let c = Color::RED;
+// Predefined constants
+let color = Color::RED;
 
-// RGB565 brut (r : 0–31, g : 0–63, b : 0–31)
-let c = Color::rgb(31, 40, 0); // orange
+// Raw RGB565 (r: 0–31, g: 0–63, b: 0–31)
+let color = Color::rgb(31, 40, 0); // orange
 
-// Depuis RGB 8 bits (réduit en RGB565)
-let c = Color::rgb8(0xFF, 0x80, 0x00); // orange
+// From 8-bit RGB (reduced to RGB565)
+let color = Color::rgb8(0xFF, 0x80, 0x00); // orange
 ```
 
 ### Orientation
 
 ```rust
-ecran.set_orientation(0x00).await.unwrap(); // portrait (défaut)
-ecran.set_orientation(0x60).await.unwrap(); // paysage
-ecran.set_orientation(0xC0).await.unwrap(); // portrait retourné
-ecran.set_orientation(0xA0).await.unwrap(); // paysage retourné
+display.set_orientation(0x00).await.unwrap(); // portrait (default)
+display.set_orientation(0x60).await.unwrap(); // landscape
+display.set_orientation(0xC0).await.unwrap(); // upside-down portrait
+display.set_orientation(0xA0).await.unwrap(); // upside-down landscape
 ```
 
 ### Inversion
 
-Les dalles IPS avec ST7789V nécessitent l'inversion activée — c'est le réglage par défaut après `init`.
-Si vos couleurs apparaissent inversées :
+IPS panels with ST7789V typically require inversion, which is enabled by default
+after `init`. If the colors look inverted:
 
 ```rust
-ecran.set_invert(false).await.unwrap();
+display.set_invert(false).await.unwrap();
 ```
 
 ---
-### Framebuffer (zéro clignotement)
 
-Pour éviter le clignotement, utilisez `St7789vBuffered` : toutes les opérations
-de dessin écrivent en RAM, puis `flush` envoie tout d'un coup à l'écran.
+### Framebuffer (flicker-free)
 
-Mémoire requise : 240 × 320 × 2 = **150 Ko** (RP2350 ✓, RP2040 ✓, STM32F103 ✗).
+To avoid flicker, use `St7789vBuffered`: drawing operations update RAM, and `flush`
+sends the complete frame to the display.
+
+Memory required: 240 × 320 × 2 = **150 KiB** (RP2350 ✓, RP2040 ✓, STM32F103 ✗).
 
 ```rust
-let mut ecran = St7789vBuffered::new(St7789v::new(spi_dev, dc, rst));
-ecran.driver().init().await.unwrap();
+let mut display = St7789vBuffered::new(St7789v::new(spi_dev, dc, rst));
+display.driver().init().await.unwrap();
 
 loop {
-    ecran.fill_screen_buf(Color::BLACK);
-    ecran.draw_str_buf(8, 10, b"BONJOUR", Color::WHITE, Color::BLACK);
-    ecran.draw_u32_buf(8, 20, compteur, Color::YELLOW, Color::BLACK);
-    ecran.flush().await.unwrap(); // envoi unique → pas de clignotement
+    display.fill_screen_buf(Color::BLACK);
+    display.draw_str_buf(8, 10, b"HELLO", Color::WHITE, Color::BLACK);
+    display.draw_u32_buf(8, 20, counter, Color::YELLOW, Color::BLACK);
+    display.flush().await.unwrap(); // one transfer, no flicker
 }
 ```
 
-| Méthode | Équivalent direct |
+| Method | Direct equivalent |
 |---|---|
 | `fill_screen_buf` | `fill_screen` |
 | `fill_rect_buf` | `fill_rect` |
@@ -253,23 +270,21 @@ loop {
 | `draw_char_buf` | `draw_char` |
 | `draw_i16_buf` | `draw_i16` |
 | `draw_u32_buf` | `draw_u32` |
-| `flush` | — (envoi SPI) |
-| `draw_char_scaled_buf`| `draw_char_scaled`|
-| `draw_str_scaled_buf`| `draw_str_scaled`|
-
-
+| `flush` | — (SPI transfer) |
+| `draw_char_scaled_buf` | `draw_char_scaled` |
+| `draw_str_scaled_buf` | `draw_str_scaled` |
 
 ---
 
-## Dépannage
+## Troubleshooting
 
-| Symptôme | Cause probable | Solution |
-|----------|---------------|----------|
-| Gris avec rétroéclairage allumé | SPI n'atteint pas l'écran | Vérifier SCL/SDA/CS/DC |
-| Couleurs inversées | Mauvais réglage d'inversion | Appeler `set_invert(false)` après `init` |
-| Mauvaise orientation | MADCTL incorrect | Essayer `set_orientation(0x60)` / `0xC0` / `0xA0` |
-| Affichage corrompu | SPI trop rapide | Baisser la fréquence à `10_000_000` pour déboguer |
-| Clignotement visible | Dessin direct sans framebuffer | Utiliser `St7789vBuffered` + `flush` |
+| Symptom | Likely cause | Solution |
+|---------|--------------|----------|
+| Gray screen with backlight on | SPI is not reaching the display | Check SCL/SDA/CS/DC |
+| Inverted colors | Incorrect inversion setting | Call `set_invert(false)` after `init` |
+| Incorrect orientation | Wrong MADCTL setting | Try `set_orientation(0x60)`, `0xC0`, or `0xA0` |
+| Corrupted display | SPI clock is too fast | Reduce the frequency to `10_000_000` for debugging |
+| Visible flicker | Drawing directly without a framebuffer | Use `St7789vBuffered` and `flush` |
 
 ---
 
@@ -277,15 +292,19 @@ loop {
 
 ```toml
 [dependencies]
-embassy-st7789v    = "0.6"
-embassy-time       = "0.5"
-embedded-hal       = "1.0"
+embassy-st7789v = "0.6.1"
+embassy-time = "0.5"
+embedded-hal = "1.0"
 embedded-hal-async = "1.0"
 ```
 
+For the RP2350 Hazard3 RISC-V backend, use the `time-riscv` configuration shown in
+[Installation](#rp2350-hazard3-risc-v-time-backend) instead.
+
 ---
 
-## Licence
+## License
 
 Copyright (C) 2026 Jorge Andre Castro
-Sous licence [GNU General Public License v2.0 ou ultérieure](LICENSE).
+
+Licensed under the [GNU General Public License v2.0 or later](LICENSE).

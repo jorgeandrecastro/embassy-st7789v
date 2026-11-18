@@ -3,26 +3,26 @@
 
 //! # embassy-st7789v
 //!
-//! Pilote async `no_std` pour l'écran TFT LCD **ST7789V** 240×320 via SPI,
-//! basé sur [Embassy](https://embassy.dev).
+//! Asynchronous `no_std` driver for the **ST7789V** 240×320 TFT LCD over SPI,
+//! based on [Embassy](https://embassy.dev).
 //!
-//! ## Fonctionnalités
+//! ## Features
 //!
-//! - Couleurs RGB565 avec constantes nommées
+//! - RGB565 colors with named constants
 //! - `fill_screen`, `fill_rect`, `draw_rect`
 //! - `draw_pixel`, `draw_hline`, `draw_vline`
-//! - Police bitmap 5×7 intégrée : ASCII, chiffres, symboles
+//! - Built-in 5×7 bitmap font: ASCII, digits, and symbols
 //! - `draw_str`, `draw_i16`, `draw_u32`, `draw_f32`
-//! - Texte mis à l'échelle avec `draw_char_scaled` et `draw_str_scaled`
-//! - Rendu de bitmap 1 bit via `draw_bitmap`
-//! - Réinitialisation matérielle et logicielle
-//! - Contrôle de l'orientation (`MADCTL`) et de l'inversion
-//! - Zéro allocation : `forbid(unsafe_code)`
-//! - Framebuffer complet 240×320 RGB565 via `St7789vBuffered` : zéro clignotement
+//! - Scaled text with `draw_char_scaled` and `draw_str_scaled`
+//! - 1-bit bitmap rendering with `draw_bitmap`
+//! - Hardware and software reset
+//! - Orientation (`MADCTL`) and inversion control
+//! - Zero allocation: `forbid(unsafe_code)`
+//! - Full 240×320 RGB565 framebuffer with `St7789vBuffered` for flicker-free updates
 //!
-//! ## Câblage (exemple RP2350)
+//! ## Wiring example (RP2350)
 //!
-//! | Écran  | GPIO  | Pin physique |
+//! | Display | GPIO  | Physical pin |
 //! |--------|-------|-------------|
 //! | VDD    | 3.3V  |             |
 //! | GND    | GND   |             |
@@ -32,26 +32,51 @@
 //! | CS     | GP20  | Pin 26      |
 //! | RESET  | GP17  | Pin 22      |
 //!
-//! ## Démarrage rapide
+//! ## Quick start
 //!
 //! ```no_run
 //! use embassy_st7789v::{Color, St7789v};
 //!
-//! let mut ecran = St7789v::new(spi_device, broche_dc, broche_rst);
-//! ecran.init().await.unwrap();
-//! ecran.fill_screen(Color::BLACK).await.unwrap();
-//! ecran.draw_str(8, 10, b"BONJOUR MONDE", Color::WHITE, Color::BLACK).await.unwrap();
+//! let mut display = St7789v::new(spi_device, dc_pin, rst_pin);
+//! display.init().await.unwrap();
+//! display.fill_screen(Color::BLACK).await.unwrap();
+//! display.draw_str(8, 10, b"HELLO WORLD", Color::WHITE, Color::BLACK).await.unwrap();
 //! ```
 
-//! // Avec framebuffer (zéro clignotement) :
-//! let mut ecran = St7789vBuffered::new(St7789v::new(spi, dc, rst));
-//! ecran.driver().init().await.unwrap();
-//! ecran.fill_screen_buf(Color::BLACK);
-//! ecran.draw_str_buf(8, 10, b"BONJOUR", Color::WHITE, Color::BLACK);
-//! ecran.flush().await.unwrap();
+//! // With a framebuffer (flicker-free):
+//! let mut display = St7789vBuffered::new(St7789v::new(spi, dc, rst));
+//! display.driver().init().await.unwrap();
+//! display.fill_screen_buf(Color::BLACK);
+//! display.draw_str_buf(8, 10, b"HELLO", Color::WHITE, Color::BLACK);
+//! display.flush().await.unwrap();
 
 #![no_std]
 #![forbid(unsafe_code)]
+
+// ============================================================
+// EMBASSY TIME BACKEND SELECTION
+// ============================================================
+
+// ARM / Cortex-M: official Embassy time backend
+#[cfg(feature = "time-upstream")]
+extern crate embassy_time;
+
+// RISC-V: custom Embassy time backend
+#[cfg(feature = "time-riscv")]
+extern crate embassy_time;
+
+// Prevent selecting both backends simultaneously.
+#[cfg(all(feature = "time-upstream", feature = "time-riscv"))]
+compile_error!(
+    "Features \"time-upstream\" and \"time-riscv\" are mutually exclusive."
+);
+
+// Require exactly one backend.
+#[cfg(not(any(feature = "time-upstream", feature = "time-riscv")))]
+compile_error!(
+    "Select one Embassy time backend: \"time-upstream\" or \"time-riscv\"."
+);
+
 
 mod cmd;
 mod font;
@@ -65,13 +90,13 @@ pub use nopin::NoPin;
 pub use driver::St7789v;
 pub use buffered::St7789vBuffered;
 
-/// Largeur de l'écran en pixels.
+/// Display width in pixels.
 pub const SCREEN_W: u16 = 240;
 
-/// Hauteur de l'écran en pixels.
+/// Display height in pixels.
 pub const SCREEN_H: u16 = 320;
 
-/// Constantes pour les symboles mathématiques dans la police bitmap intégrée.
+/// Constants for mathematical symbols in the built-in bitmap font.
 pub use font::{
     LAMBDA, THETA, PI, DELTA, DEGREE, PLUS_MINUS,
     TIMES, DIVIDE, SQRT, INFINITY, APPROX, LE, GE,

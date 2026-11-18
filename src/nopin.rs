@@ -1,14 +1,14 @@
 // Copyright (C) 2026 Jorge Andre Castro
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-//! Broche fictive pour RST optionnel.
+//! Dummy pin for optional RST.
 
 use embedded_hal::digital::OutputPin;
 
-/// Broche fictive utilisée quand aucune broche de réinitialisation matérielle n'est disponible.
+/// Dummy pin used when no hardware reset pin is available.
 ///
-/// Utilisez [`crate::St7789v::new_no_rst`] quand la broche RESET est connectée
-/// au 3.3V ou gérée en externe.
+/// Use [`crate::St7789v::new_no_rst`] when the RESET pin is tied to 3.3V
+/// or controlled externally.
 pub struct NoPin;
 
 impl OutputPin for NoPin {

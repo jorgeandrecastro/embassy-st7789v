@@ -1,6 +1,6 @@
 // Copyright (C) 2026 Jorge Andre Castro
 // SPDX-License-Identifier: GPL-2.0-or-later
-//! Constantes de commandes ST7789V (internes).
+//! ST7789V command constants (internal).
     pub(crate) const SWRESET:   u8 = 0x01;
     pub(crate) const SLPOUT:    u8 = 0x11;
     pub(crate) const NORON:     u8 = 0x13;
